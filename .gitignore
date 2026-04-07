@@ -1,0 +1,4 @@
+/.idea/
+/prometheus-nginxlog-exporter
+/dist
+.history
