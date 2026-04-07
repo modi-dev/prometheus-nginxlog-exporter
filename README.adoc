@@ -209,6 +209,18 @@ forward logs to the exporter, just instruct your main container to send its
 access logs via syslog to `127.0.0.1:5531` (which works, since the main
 container and the sidecar share their network namespace).
 
+==== Kubernetes memory limits
+
+When running in Kubernetes, you should set a memory limit on the exporter
+container. The exporter can automatically adapt Go's heap target to the
+container cgroup memory limit by using:
+
+- `-auto-gomemlimit=true` (default)
+- `-gomemlimit-ratio=0.9` (default)
+
+With these defaults, the exporter configures `GOMEMLIMIT` to 90% of the
+container memory limit (unless `GOMEMLIMIT` is already set explicitly).
+
 ### Build from source
 
 To build the exporter from source, simply build it with `go get`:

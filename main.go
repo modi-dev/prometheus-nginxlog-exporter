@@ -34,6 +34,7 @@ import (
 	"github.com/martin-helmich/prometheus-nginxlog-exporter/pkg/parser"
 	"github.com/martin-helmich/prometheus-nginxlog-exporter/pkg/prof"
 	"github.com/martin-helmich/prometheus-nginxlog-exporter/pkg/relabeling"
+	"github.com/martin-helmich/prometheus-nginxlog-exporter/pkg/runtimecfg"
 	"github.com/martin-helmich/prometheus-nginxlog-exporter/pkg/syslog"
 	"github.com/martin-helmich/prometheus-nginxlog-exporter/pkg/tail"
 	"github.com/pkg/errors"
@@ -72,6 +73,8 @@ func main() {
 	flag.StringVar(&opts.MetricsEndpoint, "metrics-endpoint", cfg.Listen.MetricsEndpoint, "URL path at which to serve metrics")
 	flag.StringVar(&opts.LogLevel, "log-level", "info", "level of logs. Allowed values: error, warning, info, debug")
 	flag.StringVar(&opts.LogFormat, "log-format", "console", "Define log format. Allowed values: console, json")
+	flag.BoolVar(&opts.AutoGoMemLimit, "auto-gomemlimit", true, "Automatically configure GOMEMLIMIT from cgroup memory limits")
+	flag.Float64Var(&opts.GoMemLimitRate, "gomemlimit-ratio", 0.9, "Ratio of cgroup memory limit to use for GOMEMLIMIT when auto-gomemlimit is enabled")
 	flag.BoolVar(&opts.VerifyConfig, "verify-config", false, "Enable this flag to check config file loads, then exit")
 	flag.BoolVar(&opts.Version, "version", false, "set to print version information")
 	flag.Parse()
@@ -85,6 +88,10 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
+	}
+
+	if err := runtimecfg.ConfigureMemoryLimitFromCgroup(logger, opts.AutoGoMemLimit, opts.GoMemLimitRate); err != nil {
+		logger.Warnf("could not configure GOMEMLIMIT from cgroup: %v", err)
 	}
 
 	opts.Filenames = flag.Args()
