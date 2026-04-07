@@ -20,6 +20,9 @@ type StartupFlags struct {
 
 	CPUProfile string
 	MemProfile string
+
+	AutoGoMemLimit bool
+	GoMemLimitRate float64
 }
 
 // Config models the application's configuration
